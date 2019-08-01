@@ -1,5 +1,6 @@
 package lol.cicco.service;
 
+import lol.cicco.exception.TestException;
 import lol.cicco.mapper.test1.TestMapper1;
 import lol.cicco.mapper.test2.TestMapper2;
 import lol.cicco.transaction.annotation.MoreTransactional;
@@ -59,6 +60,20 @@ public class TestService {
         throw new RuntimeException();
     }
 
+
+    @MoreTransactional(transactionManager = {"tx1","tx2"}, rollbackFor = IllegalArgumentException.class)
+    public void saveTestForOtherException(){
+        testMapper1.saveTest1("aaaa");
+        testMapper2.saveTest2("bbbb");
+        throw new TestException(); // not rollback
+    }
+
+    @MoreTransactional(transactionManager = {"tx1","tx2"}, rollbackFor = TestException.class)
+    public void saveTestForOtherExceptionAndRollback(){
+        testMapper1.saveTest1("aaaa");
+        testMapper2.saveTest2("bbbb");
+        throw new TestException(); // rollback
+    }
 
     public int findTest1Count(){
         return testMapper1.findCount();

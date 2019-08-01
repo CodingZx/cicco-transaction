@@ -63,6 +63,22 @@ public class TestController {
         return true;
     }
 
+    @PostMapping("/saveTestForOtherException")
+    public boolean saveTestForOtherException(){
+        try {
+            testService.saveTestForOtherException();
+        }catch (Exception ignore){}
+        return true;
+    }
+
+    @PostMapping("/saveTestForOtherExceptionAndRollback")
+    public boolean saveTestForOtherExceptionAndRollback(){
+        try {
+            testService.saveTestForOtherExceptionAndRollback();
+        }catch (Exception ignore){}
+        return true;
+    }
+
     @DeleteMapping("/flushdb")
     public boolean deleteData(){
         testService.deleteData();
