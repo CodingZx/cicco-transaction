@@ -46,6 +46,23 @@ public class TestController {
         return true;
     }
 
+
+    @PostMapping("/saveTestForNext")
+    public boolean saveTestForNext(){
+        try {
+            testService.saveTestForNextService();
+        }catch (Exception ignore){}
+        return true;
+    }
+
+    @PostMapping("/saveTestForNextWithNewTx")
+    public boolean saveTestForNextWithNewTx(){
+        try {
+            testService.saveTestForNextServiceWithNewTx();
+        }catch (Exception ignore){}
+        return true;
+    }
+
     @DeleteMapping("/flushdb")
     public boolean deleteData(){
         testService.deleteData();

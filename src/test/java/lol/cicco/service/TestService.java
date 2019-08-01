@@ -12,6 +12,8 @@ public class TestService {
     private TestMapper1 testMapper1;
     @Autowired
     private TestMapper2 testMapper2;
+    @Autowired
+    private NextService nextService;
 
     @org.springframework.transaction.annotation.Transactional(rollbackFor = Exception.class)
     public void saveTestForSpringTx(){
@@ -34,6 +36,29 @@ public class TestService {
         testMapper2.saveTest2("bbbb");
         throw new RuntimeException();
     }
+
+
+    @MoreTransactional(transactionManager = {"tx1","tx2"}, rollbackFor = Exception.class)
+    public void saveTestForNextService(){
+        testMapper1.saveTest1("aaaa");
+        testMapper2.saveTest2("bbbb");
+
+        nextService.saveTestForNextService();
+        // throw exception...
+        throw new RuntimeException();
+    }
+
+
+    @MoreTransactional(transactionManager = {"tx1","tx2"}, rollbackFor = Exception.class)
+    public void saveTestForNextServiceWithNewTx(){
+        testMapper1.saveTest1("aaaa");
+        testMapper2.saveTest2("bbbb");
+
+        nextService.saveTestForNextServiceWithNewTx();
+        // throw exception...
+        throw new RuntimeException();
+    }
+
 
     public int findTest1Count(){
         return testMapper1.findCount();

@@ -61,4 +61,32 @@ public class TransactionTest {
         // flush db
         mockMvc.perform(delete("/flushdb")).andExpect(status().isOk());
     }
+
+
+    @Test
+    public void testNextTx() throws Exception {
+        // save and rollback test1
+        mockMvc.perform(post("/saveTestForNext")).andExpect(status().isOk());
+
+        // can't rollback test2
+        mockMvc.perform(get("/count1")).andExpect(status().isOk()).andExpect(content().string("0"));
+        mockMvc.perform(get("/count2")).andExpect(status().isOk()).andExpect(content().string("0"));
+
+        // flush db
+        mockMvc.perform(delete("/flushdb")).andExpect(status().isOk());
+    }
+
+    @Test
+    public void testNextTxWithNewTx() throws Exception {
+        // save and rollback test1
+        mockMvc.perform(post("/saveTestForNextWithNewTx")).andExpect(status().isOk());
+
+        // can't rollback test2
+        mockMvc.perform(get("/count1")).andExpect(status().isOk()).andExpect(content().string("1"));
+        mockMvc.perform(get("/count2")).andExpect(status().isOk()).andExpect(content().string("1"));
+
+        // flush db
+        mockMvc.perform(delete("/flushdb")).andExpect(status().isOk());
+    }
+
 }
