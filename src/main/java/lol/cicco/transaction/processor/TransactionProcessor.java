@@ -14,7 +14,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.util.Assert;
 
-import java.util.Stack;
+import java.util.*;
 
 @Aspect
 @Component
@@ -32,32 +32,30 @@ public class TransactionProcessor implements ApplicationContextAware {
             return pjp.proceed();
         }
 
-        Stack<PlatformTransactionManager> managers = new Stack<>();
-        Stack<TransactionStatus> status = new Stack<>();
+        Set<String> txNames = new HashSet<>(List.of(tx.transactionManager()));
+
+        List<TransactionInfo> stack = new ArrayList<>(txNames.size());
 
         for (String txManagerName : tx.transactionManager()) {
             var transactionManager = context.getBean(txManagerName, PlatformTransactionManager.class);
 
             Assert.notNull(transactionManager, "The {" + txManagerName + "} is not a bean in spring.");
 
-            managers.add(transactionManager);
-
             var transactionStatus = transactionManager.getTransaction(new DefaultTransactionDefinition(tx.propagation().value()));
-            status.add(transactionStatus);
+
+            stack.add(new TransactionInfo(transactionManager, transactionStatus));
         }
         try {
             Object ret = pjp.proceed();
 
-            while(!managers.isEmpty()){
-                var manager = managers.pop();
-                manager.commit(status.pop());
+            for (int i = stack.size() - 1; i >= 0; --i) {
+                stack.get(i).commit();
             }
             return ret;
         } catch (Exception e) {
             if (checkException(e, tx.rollbackFor())) {  // 校验异常信息
-                while(!managers.isEmpty()){
-                    var manager = managers.pop();
-                    manager.rollback(status.pop());
+                for (int i = stack.size() - 1; i >= 0; --i) {
+                    stack.get(i).rollback();
                 }
             }
             throw e;
@@ -69,7 +67,8 @@ public class TransactionProcessor implements ApplicationContextAware {
             try {
                 exceptionCls.cast(e);
                 return true;
-            } catch (Exception ignore) {}
+            } catch (Exception ignore) {
+            }
         }
         return false;
     }
